@@ -6,5 +6,5 @@
         1. LINE_TOKEN=your_line_channel_access_token
         2. LINE_SECRET=your_line_channel_secret
     2. 設定 
-        1. Start Command：gunicorn app:app
+        1. Start Command：python app.py
         2. Build Command：pip install -r requirements.txt
