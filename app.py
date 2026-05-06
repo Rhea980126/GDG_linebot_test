@@ -7,28 +7,45 @@ from linebot.models import (
     TextMessage,
     TextSendMessage)
 from linebot.exceptions import InvalidSignatureError
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+import pytz
 import logging
 
-# 加載 .env 文件中的變數
 load_dotenv()
 
-# 從環境變數中讀取 LINE 的 Channel Access Token 和 Channel Secret
 line_token = os.getenv('LINE_TOKEN')
 line_secret = os.getenv('LINE_SECRET')
 
-# 檢查是否設置了環境變數
 if not line_token or not line_secret:
     raise ValueError("LINE_TOKEN 或 LINE_SECRET 未設置")
 
-# 初始化 LineBotApi 和 WebhookHandler
 line_bot_api = LineBotApi(line_token)
 handler = WebhookHandler(line_secret)
 
-# 創建 Flask 應用
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
-# 處理 LINE Webhook 回調
+# 定時推播的設定
+TARGET_USER_ID = "Uc24eaf6e2cfca14939d663f652cc65bc"
+PUSH_MESSAGE = "PUSH_MESSAGE = "咪比回家了嗎 (つ´ω`)つ\n「吃飽了」直接去洗澡\n「買回家吃」吃完後直接去洗澡～\n「還在外面」等等再聊呢\n\n洗完澡回覆「洗完了」\n回「晚上休息」查看晚上休息的時間計畫""
+
+def send_scheduled_message():
+    line_bot_api.push_message(
+        TARGET_USER_ID,
+        TextSendMessage(text=PUSH_MESSAGE)
+    )
+    app.logger.info("定時推播已發送")
+
+# 設定排程：週一到週五，台灣時間 17:40
+scheduler = BackgroundScheduler()
+taiwan_tz = pytz.timezone('Asia/Taipei')
+scheduler.add_job(
+    send_scheduled_message,
+    CronTrigger(day_of_week='mon-fri', hour=17, minute=40, timezone=taiwan_tz)
+)
+scheduler.start()
+
 @app.route("/", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -40,7 +57,6 @@ def callback():
         abort(400)
     return 'OK'
 
-# 新增：Push Message 路由
 @app.route("/push", methods=['POST'])
 def push_message():
     data = request.get_json()
@@ -52,11 +68,10 @@ def push_message():
     )
     return 'OK'
 
-# 處理收到的文字訊息（同時印出 User ID）
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
-    app.logger.info(f"User ID: {user_id}")  # 在 Render log 可以看到
+    app.logger.info(f"User ID: {user_id}")
 
     user_message = event.message.text
     reply_text = "你說了：" + user_message
