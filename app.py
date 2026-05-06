@@ -26,7 +26,6 @@ handler = WebhookHandler(line_secret)
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
-# 定時推播的設定
 TARGET_USER_ID = "Uc24eaf6e2cfca14939d663f652cc65bc"
 PUSH_MESSAGE = "咪比回家了嗎 (つ'ω')つ\n「吃飽了」直接去洗澡\n「買回家吃」吃完後直接去洗澡～\n「還在外面」等等再聊呢\n\n洗完澡回覆「洗完了」\n回「晚上休息」查看晚上休息的時間計畫"
 
@@ -34,16 +33,11 @@ def send_scheduled_message():
     line_bot_api.push_message(
         TARGET_USER_ID,
         TextSendMessage(text=PUSH_MESSAGE)
-        
-    line_bot_api.push_message(
-        TARGET_USER_ID,
-        TextSendMessage(text=PUSH_MESSAGE)
     )
     app.logger.info("定時推播已發送")
 
-# 設定排程：週一到週五，台灣時間 17:40
-scheduler = BackgroundScheduler()
 taiwan_tz = pytz.timezone('Asia/Taipei')
+scheduler = BackgroundScheduler()
 scheduler.add_job(
     send_scheduled_message,
     CronTrigger(day_of_week='mon-fri', hour=17, minute=40, timezone=taiwan_tz)
@@ -76,7 +70,6 @@ def push_message():
 def handle_message(event):
     user_id = event.source.user_id
     app.logger.info(f"User ID: {user_id}")
-
     user_message = event.message.text
     reply_text = "你說了：" + user_message
     line_bot_api.reply_message(
