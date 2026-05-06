@@ -28,9 +28,7 @@ app.logger.setLevel(logging.DEBUG)
 
 # 定時推播的設定
 TARGET_USER_ID = "Uc24eaf6e2cfca14939d663f652cc65bc"
-PUSH_MESSAGE = "PUSH_MESSAGE = "咪比回家了嗎 (つ´ω`)つ\n「吃飽了」直接去洗澡\n「買回家吃」吃完後直接去洗澡～\n「還在外面」等等再聊呢\n\n洗完澡回覆「洗完了」\n回「晚上休息」查看晚上休息的時間計畫""
-
-def send_scheduled_message():
+PUSH_MESSAGE = "咪比回家了嗎 (つ'ω')つ\n「吃飽了」直接去洗澡\n「買回家吃」吃完後直接去洗澡～\n「還在外面」等等再聊呢\n\n洗完澡回覆「洗完了」\n回「晚上休息」查看晚上休息的時間計畫"
     line_bot_api.push_message(
         TARGET_USER_ID,
         TextSendMessage(text=PUSH_MESSAGE)
