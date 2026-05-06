@@ -27,20 +27,34 @@ app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
 TARGET_USER_ID = "Uc24eaf6e2cfca14939d663f652cc65bc"
-PUSH_MESSAGE = "咪比回家了嗎 (つ'ω')つ\n「吃飽了」直接去洗澡\n「買回家吃」吃完後直接去洗澡～\n「還在外面」等等再聊呢\n\n洗完澡回覆「洗完了」\n回「晚上休息」查看晚上休息的時間計畫"
 
-def send_scheduled_message():
+PUSH_MESSAGE_1 = "咪比回家了嗎 (つ'ω')つ\n「吃飽了」直接去洗澡\n「買回家吃」吃完後直接去洗澡～\n「還在外面」等等再聊呢\n\n洗完澡回覆「洗完了」\n回「晚上休息」查看晚上休息的時間計畫"
+
+PUSH_MESSAGE_2 = "今天也是很棒的一天喔\n又到該睡覺的時間了(๑˘ ˘๑)\n把今天學到的東西和心情寫下來吧\n也可以記錄明天要做的事喔\n\n咪比晚安囉...(¦3ꇤ[▓▓]"
+
+def send_evening_message():
     line_bot_api.push_message(
         TARGET_USER_ID,
-        TextSendMessage(text=PUSH_MESSAGE)
+        TextSendMessage(text=PUSH_MESSAGE_1)
     )
-    app.logger.info("定時推播已發送")
+    app.logger.info("傍晚推播已發送")
+
+def send_night_message():
+    line_bot_api.push_message(
+        TARGET_USER_ID,
+        TextSendMessage(text=PUSH_MESSAGE_2)
+    )
+    app.logger.info("晚安推播已發送")
 
 taiwan_tz = pytz.timezone('Asia/Taipei')
 scheduler = BackgroundScheduler()
 scheduler.add_job(
-    send_scheduled_message,
+    send_evening_message,
     CronTrigger(day_of_week='mon-fri', hour=17, minute=40, timezone=taiwan_tz)
+)
+scheduler.add_job(
+    send_night_message,
+    CronTrigger(hour=23, minute=0, timezone=taiwan_tz)
 )
 scheduler.start()
 
