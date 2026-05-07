@@ -10,5 +10,5 @@
         2. Build Command：pip install -r requirements.txt
 
 說明：
-增加了 push message 功能（共兩則）
-刪掉了 handle_message 功能，mark as readed 需要另外的 mark_as_read_token 授權，所以有呼叫但沒有回應
+1. 增加了 push message 功能（共兩則）
+2. 刪掉了 handle_message 功能，mark as readed 需要另外的 mark_as_read_token 授權，所以有呼叫但沒有回應
