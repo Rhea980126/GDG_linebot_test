@@ -11,6 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
 import logging
+import requests
 
 load_dotenv()
 
@@ -58,6 +59,19 @@ scheduler.add_job(
 )
 scheduler.start()
 
+def mark_as_read(chat_id, mark_as_read_token):
+    requests.post(
+        "https://api.line.me/v3/bot/message/markAsRead",
+        headers={
+            "Authorization": f"Bearer {line_token}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "chat": {"type": "user", "userId": chat_id},
+            "lastMessageId": mark_as_read_token
+        }
+    )
+
 @app.route("/", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -84,12 +98,8 @@ def push_message():
 def handle_message(event):
     user_id = event.source.user_id
     app.logger.info(f"User ID: {user_id}")
-    user_message = event.message.text
-    reply_text = "你說了：" + user_message
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=reply_text)
-    )
+    # 已讀標記
+    mark_as_read(user_id, event.message.id)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
