@@ -59,19 +59,6 @@ scheduler.add_job(
 )
 scheduler.start()
 
-def mark_as_read(chat_id, mark_as_read_token):
-    requests.post(
-        "https://api.line.me/v3/bot/message/markAsRead",
-        headers={
-            "Authorization": f"Bearer {line_token}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "chat": {"type": "user", "userId": chat_id},
-            "lastMessageId": mark_as_read_token
-        }
-    )
-
 @app.route("/", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -98,8 +85,19 @@ def push_message():
 def handle_message(event):
     user_id = event.source.user_id
     app.logger.info(f"User ID: {user_id}")
+
     # 已讀標記
-    mark_as_read(user_id, event.message.id)
+    mark_as_read_token = event.message.mark_as_read_token
+    if mark_as_read_token:
+        requests.post(
+            "https://api.line.me/v2/bot/message/markAsRead/token",
+            headers={
+                "Authorization": f"Bearer {line_token}",
+                "Content-Type": "application/json"
+            },
+            json={"markAsReadToken": mark_as_read_token}
+        )
+        app.logger.info("已讀標記完成")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
